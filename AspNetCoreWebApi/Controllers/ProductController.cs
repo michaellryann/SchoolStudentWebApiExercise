@@ -19,9 +19,11 @@ namespace AspNetCoreWebApi.Controllers
 
         [HttpGet]
         // Use ActionResult return type.
-        public ActionResult GetProducts()
+        // productName is a query string parameter. You must set the [FromQuery] annotation.
+        public ActionResult GetProducts([FromQuery] string? productName,
+            [FromQuery] int page = 1)
         {
-            var products = _productCrudService.GetProducts();
+            var products = _productCrudService.GetProducts(productName, page);
 
             return Ok(products);
         }
@@ -51,15 +53,40 @@ namespace AspNetCoreWebApi.Controllers
             return Ok($"New Product ID: {newId}");
         }
 
-        [HttpPut]
-        public ActionResult Update()
+        [HttpPut("{productId}")]
+        public ActionResult Update(Guid productId, [FromBody]UpdateProductRequestModel updatedProduct)
         {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var isSuccess = _productCrudService.UpdateProduct(productId, updatedProduct);
+
+            if (!isSuccess)
+            {
+                // This will add a new model state error to the current ModelState object.
+                // We need to do this because we use a custom validation that is outside of data annotation validation in the model class.
+                ModelState.AddModelError("ProductID", "Product ID tidak ditemukan.");
+                return ValidationProblem(ModelState);
+            }
+
             return Ok();
         }
 
-        [HttpDelete]
-        public ActionResult Delete()
+        [HttpDelete("{productId}")]
+        public ActionResult Delete(Guid productId)
         {
+            var isSuccess = _productCrudService.DeleteProduct(productId);
+
+            if (!isSuccess)
+            {
+                // This will add a new model state error to the current ModelState object.
+                // We need to do this because we use a custom validation that is outside of data annotation validation in the model class.
+                ModelState.AddModelError("ProductID", "Product ID tidak ditemukan.");
+                return ValidationProblem(ModelState);
+            }
+
             return Ok();
         }
     }
