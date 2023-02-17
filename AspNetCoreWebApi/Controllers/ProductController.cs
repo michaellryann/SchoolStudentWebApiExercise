@@ -1,12 +1,15 @@
 ﻿using AspNetCoreWebApi.Data;
 using AspNetCoreWebApi.Models;
 using AspNetCoreWebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AspNetCoreWebApi.Controllers
 {
-    [Route("api/[controller]")]
+    // Set [Authorize] annotation on top of a controller class to secure all web API definitions in this controller.
+    [Authorize]
+    [Route("api/product")]
     [ApiController]
     public class ProductController : ControllerBase
     {
@@ -37,6 +40,9 @@ namespace AspNetCoreWebApi.Controllers
             return Ok(product);
         }
 
+        // Alternatively, you could set [Authorize] on each web API action method instead.
+        // Example, you will want to protect the Create web API to ensure that only logged in user can create a new product.
+        // [Authorize]
         [HttpPost]
         // FromBody will capture the HTTP body JSON input from HTTP request.
         public ActionResult Create([FromBody] NewProduct newProduct)
@@ -53,6 +59,8 @@ namespace AspNetCoreWebApi.Controllers
             return Ok($"New Product ID: {newId}");
         }
 
+        // To validate an user based on their user's role claims, you could set the parameter Roles with the allowed role names.
+        // [Authorize(Roles = "Manager")]
         [HttpPut("{productId}")]
         public ActionResult Update(Guid productId, [FromBody]UpdateProductRequestModel updatedProduct)
         {

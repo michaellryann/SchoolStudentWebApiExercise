@@ -1,5 +1,7 @@
 using AspNetCoreWebApi.Data;
 using AspNetCoreWebApi.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,19 @@ builder.Services.AddTransient<TestService>();
 // Set as singleton to provide static data.
 builder.Services.AddSingleton<ProductData>();
 
+// Configure JWT validation for web API's authentication and authorization.
+// Everytime a request was made to a protected web API, it will request to Duende and Duende will validate the JWT token in HTTP header "Authorize".
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = "https://demo.duendesoftware.com";
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false
+        };
+    });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,6 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
