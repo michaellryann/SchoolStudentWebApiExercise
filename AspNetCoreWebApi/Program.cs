@@ -1,6 +1,9 @@
 using AspNetCoreWebApi.Data;
 using AspNetCoreWebApi.Services;
+using AspNetCoreWebApi.Sql.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,9 +17,14 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient<ProductCrudService>();
 builder.Services.AddTransient<TestService>();
+builder.Services.AddTransient<SchoolCrudService>();
 
 // Set as singleton to provide static data.
 builder.Services.AddSingleton<ProductData>();
+
+builder.Services.AddDbContext<TurboBootcampDbContext>(options =>
+    // Use Configuration.GetConnectionString to obtain the setting value in appsettings.
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Sql")));
 
 // Configure JWT validation for web API's authentication and authorization.
 // Everytime a request was made to a protected web API, it will request to Duende and Duende will validate the JWT token in HTTP header "Authorize".
