@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AspNetCoreWebApi.Controllers
 {
     // Set [Authorize] annotation on top of a controller class to secure all web API definitions in this controller.
-    [Authorize]
+    //[Authorize]
     [Route("api/product")]
     [ApiController]
     public class ProductController : ControllerBase

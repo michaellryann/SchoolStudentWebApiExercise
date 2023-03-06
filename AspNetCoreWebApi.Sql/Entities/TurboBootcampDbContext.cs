@@ -42,7 +42,7 @@ namespace AspNetCoreWebApi.Sql.Entities
 
                 entity.Property(e => e.JoinedAt).HasColumnName("joined_at");
 
-                entity.Property(e => e.Nickname).HasColumnName("nickname");
+                entity.Property(e => e.Nickname).HasColumnName("nick_name");
 
                 entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
 

@@ -20,12 +20,14 @@ namespace AspNetCoreWebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Get()
+        public async Task<ActionResult> Get([FromQuery] string? schoolName)
         {
-            var schools = await _schoolCrudService.GetAsync();
+            var schools = await _schoolCrudService.GetAsync(schoolName);
 
             return Ok(schools);
         }
+
+       
 
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] CreateSchoolFormModel newSchool)
@@ -41,6 +43,27 @@ namespace AspNetCoreWebApi.Controllers
             return Ok(newId);
         }
 
+        [HttpPut("{schoolId}")]
+        public async Task<ActionResult> Update(int schoolId, [FromBody] UpdateSchoolRequestModel updatedSchool)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var isSuccess = _schoolCrudService.UpdateAsync(schoolId, updatedSchool);
+
+            if (!await isSuccess)
+            {
+                // This will add a new model state error to the current ModelState object.
+                // We need to do this because we use a custom validation that is outside of data annotation validation in the model class.
+                ModelState.AddModelError("SchoolID", "School ID tidak ditemukan.");
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok();
+        }
+
         [Obsolete("Raw query version.")]
         [HttpGet("raw")]
         public ActionResult GetObsolete()
@@ -54,10 +77,10 @@ namespace AspNetCoreWebApi.Controllers
                 using (var selectCommand = conn.CreateCommand())
                 {
                     var query = @"
-SELECT school_id,
-    name,
-    established_at
-FROM schools";
+                    SELECT school_id,
+                    name,
+                    established_at
+                    FROM schools";
                     selectCommand.CommandText = query;
 
                     // Use reader to SELECT data.

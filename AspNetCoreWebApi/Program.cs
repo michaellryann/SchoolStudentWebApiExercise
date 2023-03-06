@@ -18,6 +18,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ProductCrudService>();
 builder.Services.AddTransient<TestService>();
 builder.Services.AddTransient<SchoolCrudService>();
+builder.Services.AddTransient<StudentCrudService>();
 
 // Set as singleton to provide static data.
 builder.Services.AddSingleton<ProductData>();

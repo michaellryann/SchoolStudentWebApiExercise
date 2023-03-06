@@ -1,4 +1,5 @@
-﻿using AspNetCoreWebApi.Models;
+﻿using AspNetCoreWebApi.Data;
+using AspNetCoreWebApi.Models;
 using AspNetCoreWebApi.Sql.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,35 +21,45 @@ namespace AspNetCoreWebApi.Services
         /// Get all school data.
         /// </summary>
         /// <returns></returns>
-        public async Task<List<SchoolViewModel>> GetAsync()
+        public async Task<List<SchoolViewModel>> GetAsync(string? schoolName)
         {
-            var schools = await _db.Schools
+            List<SchoolViewModel> schools = null;
+
+            if (!string.IsNullOrEmpty(schoolName))
+            {
+                // Uppercase the search string to filter case-insensitive.
+                // Example: searchString = app -> APP.
+                var searchString = schoolName.ToUpper();
+
+                 schools = await _db.Schools
+                    .AsNoTracking()
+                    .Where(Q => Q.Name.ToUpper().StartsWith(searchString))
+                    .Select(Q => new SchoolViewModel
+                    {
+
+                        SchoolId = Q.SchoolId,
+                        SchoolName = Q.Name,
+                        EstablishedAt = Q.EstablishedAt
+
+                    })
+                    .ToListAsync();
+            }
+            else
+            {
+                schools = await _db.Schools
                // Use AsNoTracking() for read-only / SELECT queries to improve the performance.
                .AsNoTracking()
                .Select(Q => new SchoolViewModel
                {
+
                    SchoolId = Q.SchoolId,
                    SchoolName = Q.Name,
                    EstablishedAt = Q.EstablishedAt
+
                })
                .ToListAsync();
-
-            // The above LINQ lambda expression codes will translate to this following SQL command:
-            // SELECT s.school_id AS "SchoolId",
-            // s"name" AS "SchoolName"
-            // s.established_at AS "EstablishedAt"
-            // FROM schools s
-
-            // Alternative LINQ expression (use this expression for JOIN case):
-            // var query = from s in _db.Schools
-            //             select new SchoolViewModel 
-            //             {
-            //                 SchoolId = s.SchoolId,
-            //                 SchoolName = s.Name,
-            //                 EstablishedAt = s.EstablishedAt
-            //             };
-            // var schools = await query.AsNoTracking().ToListAsync();
-
+            }
+            
             return schools;
         }
 
@@ -78,5 +89,24 @@ namespace AspNetCoreWebApi.Services
             // it will automatically append the INSERTED ID value, because your school object is still tracked.
             return school.SchoolId;
         }
+
+        public async Task<bool> UpdateAsync(int schoolId, UpdateSchoolRequestModel updatedSchool)
+        {
+            var existingSchool = _db.Schools
+                .FirstOrDefault(Q => Q.SchoolId == schoolId);
+
+            if (existingSchool == null)
+            {
+                return false;
+            }
+
+            existingSchool.Name = updatedSchool.SchoolName!;
+           
+            await _db.SaveChangesAsync();
+
+            return true;
+        }
+
+        
     }
 }
