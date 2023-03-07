@@ -27,14 +27,14 @@ namespace AspNetCoreWebApi.Services
                StudentId = Q.StudentId,
                PhoneNumber = Q.PhoneNumber,
                FullName = Q.FullName,
-               NickName = Q.Nickname,
+               NickName = Q.Nickname == null ? "NONE" : Q.Nickname,
                JoinedAt = Q.JoinedAt,
-               SchoolId = (int)Q.SchoolId
+               SchoolId = (int)(Q.SchoolId == null ? 0 : Q.SchoolId)
 
            })
            .ToListAsync();
 
-            var itemPerPage = 3;
+            var itemPerPage = 5;
 
             if (page >= 1)
             {
